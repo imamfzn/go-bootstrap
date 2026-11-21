@@ -58,8 +58,12 @@ func Auth(verifier Verifier, errs *response.ErrorWriter) func(http.Handler) http
 			}
 
 			userID, err := verifier.Verify(r.Context(), token)
-			if err != nil || userID == "" {
-				errs.Write(w, r, fmt.Errorf("%w: verify token: %v", domain.ErrUnauthorized, err))
+			if err != nil {
+				errs.Write(w, r, fmt.Errorf("%w: verify token: %w", domain.ErrUnauthorized, err))
+				return
+			}
+			if userID == "" {
+				errs.Write(w, r, domain.ErrUnauthorized)
 				return
 			}
 

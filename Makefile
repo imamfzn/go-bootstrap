@@ -65,6 +65,10 @@ run-job: ## Run a job: make run-job name=expire-orders
 test: ## Run the tests (repository tests need TEST_DATABASE_URL and `make migrate-up`)
 	go test -race ./...
 
+.PHONY: smoke
+smoke: ## End-to-end check of API, worker and jobs (needs `make up`)
+	./scripts/smoke.sh
+
 .PHONY: vet
 vet: ## Run go vet
 	go vet ./...

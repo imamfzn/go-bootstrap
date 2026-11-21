@@ -2,7 +2,7 @@
 
 A starting point for a Go service on Google Cloud: a REST API on Cloud Run, scheduled work on Cloud Run Jobs and a Pub/Sub consumer, sharing one codebase and one image, with PostgreSQL on Cloud SQL.
 
-It is a layered design (`domain`, `usecase`, `repository`, adapters) with the rules written down in [AGENTS.md](AGENTS.md) and explained in [docs/architecture.md](docs/architecture.md). A small `order` domain runs through every layer as a worked example.
+It is a layered design (`domain`, `usecase`, `repository`, adapters) with the rules written down in [docs/conventions.md](docs/conventions.md) and explained in [docs/architecture.md](docs/architecture.md). A small `order` domain runs through every layer as a worked example.
 
 ## Stack
 
@@ -46,13 +46,25 @@ curl -s localhost:8080/v1/orders/<id>/cancel -X POST \
 
 `make help` lists every command.
 
+## Documentation
+
+| Document | Covers |
+|---|---|
+| [docs/architecture.md](docs/architecture.md) | how the pieces fit, and why |
+| [docs/conventions.md](docs/conventions.md) | the rules for every layer |
+| [docs/testing.md](docs/testing.md) | how tests are written and run |
+| [docs/migrations.md](docs/migrations.md) | schema changes |
+| [docs/development.md](docs/development.md) | setup, commands, adding a feature |
+
+[AGENTS.md](AGENTS.md) is the entry point for coding agents and points to the same documents.
+
 ## Using it as a template
 
 ```sh
 make rename module=github.com/acme/orders
 ```
 
-Then replace the `order` example with your own domain, following "Adding a feature" in [AGENTS.md](AGENTS.md). Three seams are deliberately left open: authentication, the payment provider and telemetry. [docs/architecture.md](docs/architecture.md) says where each one plugs in.
+Then replace the `order` example with your own domain, following "Adding a feature" in [docs/development.md](docs/development.md). Three seams are deliberately left open: authentication, the payment provider and telemetry. [docs/architecture.md](docs/architecture.md) says where each one plugs in.
 
 ## Layout
 

@@ -13,7 +13,7 @@ linters:
     - misspell
 
   settings:
-    # The import rule of the architecture, enforced. See AGENTS.md.
+    # The import rule of the architecture, enforced. See docs/conventions.md.
     depguard:
       rules:
         domain:

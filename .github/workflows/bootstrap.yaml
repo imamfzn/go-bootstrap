@@ -86,6 +86,20 @@ jobs:
         if: always()
         run: go test -race ./...
 
+      - name: Smoke
+        if: always()
+        run: |
+          cp .env.example .env
+          docker run -d --name pubsub -p 8085:8085 \
+            gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators \
+            gcloud beta emulators pubsub start --project=local --host-port=0.0.0.0:8085
+          make pubsub-setup
+          make smoke
+
+      - name: Image
+        if: always()
+        run: docker build -f deploy/Dockerfile -t go-bootstrap .
+
       - name: Modernizers
         if: always()
         run: go fix -diff ./... 2>&1 | head -300

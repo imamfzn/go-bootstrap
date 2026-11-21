@@ -63,6 +63,48 @@ jobs:
       - name: Test
         run: go test -race ./...
 
+  # Boots the real binaries against Postgres and the Pub/Sub emulator and
+  # follows one order from the API through the worker.
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: app
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U app -d app"
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Start the Pub/Sub emulator
+        run: |
+          cp .env.example .env
+          docker run -d --name pubsub -p 8085:8085 \
+            gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators \
+            gcloud beta emulators pubsub start --project=local --host-port=0.0.0.0:8085
+          make pubsub-setup
+
+      - name: Smoke test
+        run: make smoke
+
+      - name: Build the image
+        run: docker build -f deploy/Dockerfile -t go-bootstrap .
+
   lint:
     runs-on: ubuntu-latest
     timeout-minutes: 10
