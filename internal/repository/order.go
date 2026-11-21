@@ -39,13 +39,20 @@ SET status = @expired, updated_at = @now
 WHERE status = @pending AND created_at < @created_before`
 )
 
+// DB is what a repository needs from the database handle: the connection
+// to run a statement on, which is the transaction in progress when the
+// context carries one. *postgres.DB implements it.
+type DB interface {
+	Conn(ctx context.Context) postgres.Querier
+}
+
 // Order stores orders in PostgreSQL.
 type Order struct {
-	db *postgres.DB
+	db DB
 }
 
 // NewOrder returns the order repository.
-func NewOrder(db *postgres.DB) *Order {
+func NewOrder(db DB) *Order {
 	return &Order{db: db}
 }
 
