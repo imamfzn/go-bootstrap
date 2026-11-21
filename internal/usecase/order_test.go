@@ -19,13 +19,13 @@ type fixture struct {
 	uc       usecase.OrderUsecase
 }
 
-func newFixture(orders ...domain.Order) *fixture {
+func newFixture(orders ...*domain.Order) *fixture {
 	f := &fixture{
 		orders:   newFakeOrders(orders...),
 		events:   &fakeEvents{},
 		payments: &fakePayments{},
 	}
-	f.uc = usecase.NewOrder(usecase.OrderDeps{
+	f.uc = usecase.NewOrder(&usecase.OrderDeps{
 		Orders:     f.orders,
 		Events:     f.events,
 		Payments:   f.payments,
@@ -37,8 +37,8 @@ func newFixture(orders ...domain.Order) *fixture {
 	return f
 }
 
-func order(id, userID string, status domain.OrderStatus) domain.Order {
-	return domain.Order{
+func order(id, userID string, status domain.OrderStatus) *domain.Order {
+	return &domain.Order{
 		ID: id, UserID: userID, ProductID: "p1", Quantity: 1, Amount: 5000,
 		Status: status, CreatedAt: now.Add(-time.Hour), UpdatedAt: now.Add(-time.Hour),
 	}
@@ -47,7 +47,7 @@ func order(id, userID string, status domain.OrderStatus) domain.Order {
 func TestCreate_StoresPendingOrderAndAnnouncesIt(t *testing.T) {
 	f := newFixture()
 
-	got, err := f.uc.Create(t.Context(), domain.CreateOrder{UserID: "u1", ProductID: "p1", Quantity: 2, Amount: 9000})
+	got, err := f.uc.Create(t.Context(), &domain.CreateOrder{UserID: "u1", ProductID: "p1", Quantity: 2, Amount: 9000})
 	if err != nil {
 		t.Fatalf("Create: %v", err)
 	}
@@ -70,7 +70,7 @@ func TestCreate_StoresPendingOrderAndAnnouncesIt(t *testing.T) {
 func TestCreate_InvalidInputStoresNothing(t *testing.T) {
 	f := newFixture()
 
-	_, err := f.uc.Create(t.Context(), domain.CreateOrder{UserID: "u1", ProductID: "p1", Quantity: 0, Amount: 9000})
+	_, err := f.uc.Create(t.Context(), &domain.CreateOrder{UserID: "u1", ProductID: "p1", Quantity: 0, Amount: 9000})
 
 	if !errors.Is(err, domain.ErrOrderQuantityInvalid) {
 		t.Fatalf("err = %v, want ErrOrderQuantityInvalid", err)
@@ -87,7 +87,7 @@ func TestCreate_AnnounceFailureIsReported(t *testing.T) {
 	f := newFixture()
 	f.events.err = errors.New("broker down")
 
-	_, err := f.uc.Create(t.Context(), domain.CreateOrder{UserID: "u1", ProductID: "p1", Quantity: 1, Amount: 100})
+	_, err := f.uc.Create(t.Context(), &domain.CreateOrder{UserID: "u1", ProductID: "p1", Quantity: 1, Amount: 100})
 
 	if !errors.Is(err, f.events.err) {
 		t.Fatalf("err = %v, want it to wrap the publish error", err)

@@ -28,7 +28,7 @@ func respond(status int, body string) *http.Response {
 func newClient(t *testing.T, transport roundTripFunc) *payment.Client {
 	t.Helper()
 
-	client, err := payment.NewClient(&http.Client{Transport: transport}, payment.Config{
+	client, err := payment.NewClient(&http.Client{Transport: transport}, &payment.Config{
 		BaseURL: "https://payments.test/api",
 		APIKey:  "secret",
 	})
@@ -59,7 +59,7 @@ func TestCharge_SendsRequest(t *testing.T) {
 		return respond(http.StatusCreated, `{}`), nil
 	})
 
-	if err := client.Charge(t.Context(), domain.Charge{OrderID: "o1", Amount: 5000}); err != nil {
+	if err := client.Charge(t.Context(), &domain.Charge{OrderID: "o1", Amount: 5000}); err != nil {
 		t.Fatalf("Charge: %v", err)
 	}
 
@@ -101,7 +101,7 @@ func TestCharge_Responses(t *testing.T) {
 				return respond(tt.status, tt.body), nil
 			})
 
-			err := client.Charge(t.Context(), domain.Charge{OrderID: "o1", Amount: 5000})
+			err := client.Charge(t.Context(), &domain.Charge{OrderID: "o1", Amount: 5000})
 
 			if (err != nil) != tt.wantErr {
 				t.Fatalf("err = %v, want an error: %v", err, tt.wantErr)
@@ -117,7 +117,7 @@ func TestCharge_TransportFailureIsNotADomainError(t *testing.T) {
 	boom := errors.New("connection refused")
 	client := newClient(t, func(*http.Request) (*http.Response, error) { return nil, boom })
 
-	err := client.Charge(t.Context(), domain.Charge{OrderID: "o1", Amount: 5000})
+	err := client.Charge(t.Context(), &domain.Charge{OrderID: "o1", Amount: 5000})
 
 	if !errors.Is(err, boom) {
 		t.Fatalf("err = %v, want it to wrap %v", err, boom)
@@ -128,7 +128,7 @@ func TestCharge_TransportFailureIsNotADomainError(t *testing.T) {
 }
 
 func TestNewClient_InvalidBaseURL(t *testing.T) {
-	if _, err := payment.NewClient(http.DefaultClient, payment.Config{BaseURL: "://nope"}); err == nil {
+	if _, err := payment.NewClient(http.DefaultClient, &payment.Config{BaseURL: "://nope"}); err == nil {
 		t.Fatal("NewClient accepted an invalid base URL")
 	}
 }

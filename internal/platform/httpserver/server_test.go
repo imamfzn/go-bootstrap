@@ -99,7 +99,7 @@ func TestServe_DrainsInFlightRequestOnShutdown(t *testing.T) {
 	ctx, cancel := context.WithCancel(t.Context())
 	served := make(chan error, 1)
 	go func() {
-		served <- httpserver.Serve(ctx, ln, httpserver.Config{ShutdownTimeout: time.Minute}, h)
+		served <- httpserver.Serve(ctx, ln, &httpserver.Config{ShutdownTimeout: time.Minute}, h)
 	}()
 
 	type result struct {
@@ -142,7 +142,7 @@ func TestServe_RequestContextSurvivesShutdownSignal(t *testing.T) {
 	ctx, cancel := context.WithCancel(t.Context())
 	served := make(chan error, 1)
 	go func() {
-		served <- httpserver.Serve(ctx, ln, httpserver.Config{ShutdownTimeout: time.Minute}, h)
+		served <- httpserver.Serve(ctx, ln, &httpserver.Config{ShutdownTimeout: time.Minute}, h)
 	}()
 	go func() { _, _ = get(t.Context(), client) }()
 
@@ -162,7 +162,7 @@ func TestServe_ReportsListenerFailure(t *testing.T) {
 	ln := newPipeListener()
 	_ = ln.Close()
 
-	err := httpserver.Serve(t.Context(), ln, httpserver.Config{ShutdownTimeout: time.Minute}, http.NotFoundHandler())
+	err := httpserver.Serve(t.Context(), ln, &httpserver.Config{ShutdownTimeout: time.Minute}, http.NotFoundHandler())
 
 	if !errors.Is(err, net.ErrClosed) {
 		t.Fatalf("Serve = %v, want it to report the closed listener", err)

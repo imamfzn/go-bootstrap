@@ -17,13 +17,12 @@ const maxBodyBytes = 1 << 20
 // Decode reads the JSON body into T. The body must be one JSON value with
 // no unknown fields and nothing after it. Any failure is reported as
 // domain.ErrRequestMalformed.
-func Decode[T any](w http.ResponseWriter, r *http.Request) (T, error) {
-	var v T
+func Decode[T any](w http.ResponseWriter, r *http.Request) (*T, error) {
+	v := new(T)
 
 	body := http.MaxBytesReader(w, r.Body, maxBodyBytes)
-	if err := json.UnmarshalRead(body, &v, json.RejectUnknownMembers(true)); err != nil {
-		var zero T
-		return zero, fmt.Errorf("%w: %w", domain.ErrRequestMalformed, err)
+	if err := json.UnmarshalRead(body, v, json.RejectUnknownMembers(true)); err != nil {
+		return nil, fmt.Errorf("%w: %w", domain.ErrRequestMalformed, err)
 	}
 	return v, nil
 }

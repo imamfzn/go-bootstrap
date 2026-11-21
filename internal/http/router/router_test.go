@@ -32,14 +32,14 @@ type fakeOrders struct {
 	panics  bool
 }
 
-func (f *fakeOrders) Create(_ context.Context, input domain.CreateOrder) (*domain.Order, error) {
+func (f *fakeOrders) Create(_ context.Context, input *domain.CreateOrder) (*domain.Order, error) {
 	if f.panics {
 		panic("boom")
 	}
 	if f.err != nil {
 		return nil, f.err
 	}
-	f.created = append(f.created, input)
+	f.created = append(f.created, *input)
 	return domain.NewOrder("o1", input, createdAt), nil
 }
 
@@ -62,7 +62,7 @@ type options struct {
 	ready  error
 }
 
-func newAPI(t *testing.T, opts options) http.Handler {
+func newAPI(t *testing.T, opts *options) http.Handler {
 	t.Helper()
 
 	catalog, err := i18n.Load(locales.FS, "en")
@@ -73,7 +73,7 @@ func newAPI(t *testing.T, opts options) http.Handler {
 		opts.orders = &fakeOrders{}
 	}
 
-	return router.New(router.Deps{
+	return router.New(&router.Deps{
 		Orders:   opts.orders,
 		Catalog:  catalog,
 		Logger:   slog.New(slog.NewTextHandler(io.Discard, nil)),
@@ -87,7 +87,7 @@ type call struct {
 	header             map[string]string
 }
 
-func do(t *testing.T, api http.Handler, c call) *httptest.ResponseRecorder {
+func do(t *testing.T, api http.Handler, c *call) *httptest.ResponseRecorder {
 	t.Helper()
 
 	var body io.Reader
@@ -120,9 +120,9 @@ func asUser(id string) map[string]string {
 
 func TestCreateOrder(t *testing.T) {
 	orders := &fakeOrders{}
-	api := newAPI(t, options{orders: orders})
+	api := newAPI(t, &options{orders: orders})
 
-	rec := do(t, api, call{
+	rec := do(t, api, &call{
 		method: http.MethodPost, path: "/v1/orders", header: asUser("u1"),
 		body: `{"product_id":"p1","quantity":2,"amount":5000,"note":"hi"}`,
 	})
@@ -150,9 +150,9 @@ func TestCreateOrder(t *testing.T) {
 
 func TestCreateOrder_MalformedBody(t *testing.T) {
 	orders := &fakeOrders{}
-	api := newAPI(t, options{orders: orders})
+	api := newAPI(t, &options{orders: orders})
 
-	rec := do(t, api, call{method: http.MethodPost, path: "/v1/orders", header: asUser("u1"), body: `{"quantity":`})
+	rec := do(t, api, &call{method: http.MethodPost, path: "/v1/orders", header: asUser("u1"), body: `{"quantity":`})
 
 	if rec.Code != http.StatusBadRequest {
 		t.Fatalf("status = %d, want 400", rec.Code)
@@ -168,60 +168,60 @@ func TestCreateOrder_MalformedBody(t *testing.T) {
 func TestErrorResponses(t *testing.T) {
 	tests := []struct {
 		name       string
-		call       call
+		call       *call
 		orders     *fakeOrders
 		wantStatus int
 		wantCode   string
 	}{
 		{
 			name:       "no token",
-			call:       call{method: http.MethodGet, path: "/v1/orders/o1"},
+			call:       &call{method: http.MethodGet, path: "/v1/orders/o1"},
 			wantStatus: http.StatusUnauthorized, wantCode: "UNAUTHORIZED",
 		},
 		{
 			name:       "wrong scheme",
-			call:       call{method: http.MethodGet, path: "/v1/orders/o1", header: map[string]string{"Authorization": "Basic abc"}},
+			call:       &call{method: http.MethodGet, path: "/v1/orders/o1", header: map[string]string{"Authorization": "Basic abc"}},
 			wantStatus: http.StatusUnauthorized, wantCode: "UNAUTHORIZED",
 		},
 		{
 			name:       "business rule from the use case",
-			call:       call{method: http.MethodPost, path: "/v1/orders/o1/cancel", header: asUser("u1")},
+			call:       &call{method: http.MethodPost, path: "/v1/orders/o1/cancel", header: asUser("u1")},
 			orders:     &fakeOrders{err: domain.ErrOrderCancelNotAllowed},
 			wantStatus: http.StatusConflict, wantCode: "ORDER_CANCEL_NOT-ALLOWED",
 		},
 		{
 			name:       "validation error defaults to 422",
-			call:       call{method: http.MethodPost, path: "/v1/orders", header: asUser("u1"), body: `{}`},
+			call:       &call{method: http.MethodPost, path: "/v1/orders", header: asUser("u1"), body: `{}`},
 			orders:     &fakeOrders{err: domain.ErrOrderProductRequired},
 			wantStatus: http.StatusUnprocessableEntity, wantCode: "ORDER_CREATE_PRODUCT-REQUIRED",
 		},
 		{
 			name:       "unexpected error is a generic 500",
-			call:       call{method: http.MethodGet, path: "/v1/orders/o1", header: asUser("u1")},
+			call:       &call{method: http.MethodGet, path: "/v1/orders/o1", header: asUser("u1")},
 			orders:     &fakeOrders{err: errors.New("connection refused")},
 			wantStatus: http.StatusInternalServerError, wantCode: "INTERNAL",
 		},
 		{
 			name:       "panic is a generic 500",
-			call:       call{method: http.MethodPost, path: "/v1/orders", header: asUser("u1"), body: `{}`},
+			call:       &call{method: http.MethodPost, path: "/v1/orders", header: asUser("u1"), body: `{}`},
 			orders:     &fakeOrders{panics: true},
 			wantStatus: http.StatusInternalServerError, wantCode: "INTERNAL",
 		},
 		{
 			name:       "unknown route",
-			call:       call{method: http.MethodGet, path: "/nope"},
+			call:       &call{method: http.MethodGet, path: "/nope"},
 			wantStatus: http.StatusNotFound, wantCode: "NOT_FOUND",
 		},
 		{
 			name:       "wrong method",
-			call:       call{method: http.MethodDelete, path: "/healthz"},
+			call:       &call{method: http.MethodDelete, path: "/healthz"},
 			wantStatus: http.StatusMethodNotAllowed, wantCode: "METHOD_NOT_ALLOWED",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			rec := do(t, newAPI(t, options{orders: tt.orders}), tt.call)
+			rec := do(t, newAPI(t, &options{orders: tt.orders}), tt.call)
 
 			if rec.Code != tt.wantStatus {
 				t.Errorf("status = %d, want %d", rec.Code, tt.wantStatus)
@@ -238,11 +238,11 @@ func TestErrorResponses(t *testing.T) {
 }
 
 func TestErrorMessageFollowsAcceptLanguage(t *testing.T) {
-	api := newAPI(t, options{orders: &fakeOrders{err: domain.ErrOrderNotFound}})
+	api := newAPI(t, &options{orders: &fakeOrders{err: domain.ErrOrderNotFound}})
 	get := func(lang string) (response.ErrorBody, string) {
 		header := asUser("u1")
 		header["Accept-Language"] = lang
-		rec := do(t, api, call{method: http.MethodGet, path: "/v1/orders/o1", header: header})
+		rec := do(t, api, &call{method: http.MethodGet, path: "/v1/orders/o1", header: header})
 		return decodeBody[response.ErrorBody](t, rec), rec.Header().Get("Content-Language")
 	}
 
@@ -265,9 +265,9 @@ func TestErrorMessageFollowsAcceptLanguage(t *testing.T) {
 }
 
 func TestGetOrder_UsesAuthenticatedUser(t *testing.T) {
-	api := newAPI(t, options{})
+	api := newAPI(t, &options{})
 
-	rec := do(t, api, call{method: http.MethodGet, path: "/v1/orders/o7", header: asUser("u1")})
+	rec := do(t, api, &call{method: http.MethodGet, path: "/v1/orders/o7", header: asUser("u1")})
 
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d, want 200\n%s", rec.Code, rec.Body.String())
@@ -291,7 +291,7 @@ func TestHealth(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			rec := do(t, newAPI(t, options{ready: tt.ready}), call{method: http.MethodGet, path: tt.path})
+			rec := do(t, newAPI(t, &options{ready: tt.ready}), &call{method: http.MethodGet, path: tt.path})
 
 			if rec.Code != tt.wantStatus {
 				t.Fatalf("status = %d, want %d", rec.Code, tt.wantStatus)
@@ -301,9 +301,9 @@ func TestHealth(t *testing.T) {
 }
 
 func TestRequestID_EchoesClientValue(t *testing.T) {
-	api := newAPI(t, options{})
+	api := newAPI(t, &options{})
 
-	rec := do(t, api, call{method: http.MethodGet, path: "/healthz", header: map[string]string{"X-Request-ID": "abc-123"}})
+	rec := do(t, api, &call{method: http.MethodGet, path: "/healthz", header: map[string]string{"X-Request-ID": "abc-123"}})
 
 	if got := rec.Header().Get("X-Request-ID"); got != "abc-123" {
 		t.Fatalf("X-Request-ID = %q, want abc-123", got)

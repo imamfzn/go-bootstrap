@@ -45,7 +45,7 @@ type CreateOrder struct {
 }
 
 // Validate checks the rules that need no I/O. Each rule has its own error.
-func (p CreateOrder) Validate() error {
+func (p *CreateOrder) Validate() error {
 	switch {
 	case p.UserID == "":
 		return ErrUnauthorized
@@ -62,7 +62,7 @@ func (p CreateOrder) Validate() error {
 }
 
 // NewOrder builds a pending order from validated input.
-func NewOrder(id string, p CreateOrder, now time.Time) *Order {
+func NewOrder(id string, p *CreateOrder, now time.Time) *Order {
 	return &Order{
 		ID:        id,
 		UserID:    p.UserID,

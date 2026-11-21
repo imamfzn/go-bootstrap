@@ -9,8 +9,8 @@ import (
 	"github.com/imamfzn/go-bootstrap/internal/domain"
 )
 
-func validCreateOrder() domain.CreateOrder {
-	return domain.CreateOrder{UserID: "u1", ProductID: "p1", Quantity: 2, Amount: 5000}
+func validCreateOrder() *domain.CreateOrder {
+	return &domain.CreateOrder{UserID: "u1", ProductID: "p1", Quantity: 2, Amount: 5000}
 }
 
 func TestCreateOrder_Validate(t *testing.T) {
@@ -33,7 +33,7 @@ func TestCreateOrder_Validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			p := validCreateOrder()
-			tt.mutate(&p)
+			tt.mutate(p)
 
 			if err := p.Validate(); !errors.Is(err, tt.want) {
 				t.Fatalf("Validate() = %v, want %v", err, tt.want)

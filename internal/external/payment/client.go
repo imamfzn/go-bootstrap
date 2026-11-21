@@ -32,7 +32,7 @@ type Client struct {
 }
 
 // NewClient returns a client. httpClient must have a timeout.
-func NewClient(httpClient *http.Client, cfg Config) (*Client, error) {
+func NewClient(httpClient *http.Client, cfg *Config) (*Client, error) {
 	baseURL, err := url.Parse(cfg.BaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("parse payment base url: %w", err)
@@ -42,7 +42,7 @@ func NewClient(httpClient *http.Client, cfg Config) (*Client, error) {
 
 // Charge takes payment for an order. The order ID is sent as the
 // idempotency key, so the provider charges once however often this runs.
-func (c *Client) Charge(ctx context.Context, charge domain.Charge) error {
+func (c *Client) Charge(ctx context.Context, charge *domain.Charge) error {
 	body, err := json.Marshal(chargeRequest{Reference: charge.OrderID, Amount: charge.Amount})
 	if err != nil {
 		return fmt.Errorf("encode charge: %w", err)
@@ -77,7 +77,7 @@ type Approving struct {
 }
 
 // Charge approves the charge.
-func (a Approving) Charge(ctx context.Context, charge domain.Charge) error {
+func (a *Approving) Charge(ctx context.Context, charge *domain.Charge) error {
 	a.Logger.WarnContext(ctx, "payment approved by the local stand-in, no money moved", "order_id", charge.OrderID)
 	return nil
 }
@@ -85,10 +85,10 @@ func (a Approving) Charge(ctx context.Context, charge domain.Charge) error {
 // maxErrorBody bounds how much of a failed response is read.
 const maxErrorBody = 4 << 10
 
-func readError(r io.Reader) errorResponse {
-	var body errorResponse
+func readError(r io.Reader) *errorResponse {
+	body := new(errorResponse)
 	// The body is only used to describe the failure, so a response that
 	// cannot be decoded is not itself an error.
-	_ = json.UnmarshalRead(io.LimitReader(r, maxErrorBody), &body)
+	_ = json.UnmarshalRead(io.LimitReader(r, maxErrorBody), body)
 	return body
 }

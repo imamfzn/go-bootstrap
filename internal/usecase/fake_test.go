@@ -22,10 +22,10 @@ type fakeOrders struct {
 	expireResult int
 }
 
-func newFakeOrders(orders ...domain.Order) *fakeOrders {
+func newFakeOrders(orders ...*domain.Order) *fakeOrders {
 	f := &fakeOrders{rows: make(map[string]domain.Order)}
 	for _, o := range orders {
-		f.rows[o.ID] = o
+		f.rows[o.ID] = *o
 	}
 	return f
 }
@@ -88,8 +88,8 @@ type fakePayments struct {
 	err     error
 }
 
-func (f *fakePayments) Charge(_ context.Context, charge domain.Charge) error {
-	f.charges = append(f.charges, charge)
+func (f *fakePayments) Charge(_ context.Context, charge *domain.Charge) error {
+	f.charges = append(f.charges, *charge)
 	return f.err
 }
 

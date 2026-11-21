@@ -60,7 +60,7 @@ func TestPublish_RoundTripsThroughJSON(t *testing.T) {
 	sender := &fakeSender{}
 	ctx := requestid.With(t.Context(), "req-9")
 
-	if err := queue.Publish(ctx, sender, "orders", "order.paid", orderPaid{OrderID: "o1"}); err != nil {
+	if err := queue.Publish(ctx, sender, "orders", "order.paid", &orderPaid{OrderID: "o1"}); err != nil {
 		t.Fatalf("Publish: %v", err)
 	}
 
@@ -93,7 +93,7 @@ func TestPublish_RoundTripsThroughJSON(t *testing.T) {
 func TestPublish_OmitsEmptyRequestID(t *testing.T) {
 	sender := &fakeSender{}
 
-	if err := queue.Publish(t.Context(), sender, "orders", "order.paid", orderPaid{OrderID: "o1"}); err != nil {
+	if err := queue.Publish(t.Context(), sender, "orders", "order.paid", &orderPaid{OrderID: "o1"}); err != nil {
 		t.Fatalf("Publish: %v", err)
 	}
 
@@ -114,7 +114,7 @@ func TestPublish_OmitsEmptyRequestID(t *testing.T) {
 func TestPublish_SendFailure(t *testing.T) {
 	boom := errors.New("broker down")
 
-	err := queue.Publish(t.Context(), &fakeSender{err: boom}, "orders", "order.paid", orderPaid{})
+	err := queue.Publish(t.Context(), &fakeSender{err: boom}, "orders", "order.paid", &orderPaid{})
 
 	if !errors.Is(err, boom) {
 		t.Fatalf("Publish = %v, want it to wrap %v", err, boom)

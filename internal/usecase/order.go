@@ -16,7 +16,7 @@ import (
 // OrderUsecase is everything that can be done with orders.
 type OrderUsecase interface {
 	// Create validates the input, stores a pending order and announces it.
-	Create(ctx context.Context, input domain.CreateOrder) (*domain.Order, error)
+	Create(ctx context.Context, input *domain.CreateOrder) (*domain.Order, error)
 	// Get returns the user's own order.
 	Get(ctx context.Context, userID, id string) (*domain.Order, error)
 	// Cancel cancels the user's own pending order.
@@ -52,7 +52,7 @@ type orderUsecase struct {
 }
 
 // NewOrder returns the order use case.
-func NewOrder(d OrderDeps) OrderUsecase {
+func NewOrder(d *OrderDeps) OrderUsecase {
 	return &orderUsecase{
 		orders:     d.Orders,
 		events:     d.Events,
@@ -64,7 +64,7 @@ func NewOrder(d OrderDeps) OrderUsecase {
 	}
 }
 
-func (u *orderUsecase) Create(ctx context.Context, input domain.CreateOrder) (*domain.Order, error) {
+func (u *orderUsecase) Create(ctx context.Context, input *domain.CreateOrder) (*domain.Order, error) {
 	if err := input.Validate(); err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func (u *orderUsecase) Pay(ctx context.Context, id string) error {
 	// The charge is an outside call, so it stays out of the transaction.
 	// The gateway deduplicates by order ID, which makes a redelivered
 	// message safe.
-	if err := u.payments.Charge(ctx, domain.Charge{OrderID: order.ID, Amount: order.Amount}); err != nil {
+	if err := u.payments.Charge(ctx, &domain.Charge{OrderID: order.ID, Amount: order.Amount}); err != nil {
 		return fmt.Errorf("charge order %s: %w", id, err)
 	}
 

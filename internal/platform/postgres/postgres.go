@@ -42,7 +42,7 @@ type DB struct {
 }
 
 // Open creates the pool and checks that the database answers.
-func Open(ctx context.Context, cfg Config) (*DB, error) {
+func Open(ctx context.Context, cfg *Config) (*DB, error) {
 	poolCfg, err := pgxpool.ParseConfig(cfg.URL)
 	if err != nil {
 		return nil, fmt.Errorf("parse database url: %w", err)

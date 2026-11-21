@@ -16,8 +16,8 @@ import (
 )
 
 // RunAPI serves the REST API until ctx is cancelled.
-func RunAPI(ctx context.Context, cfg config.API) error {
-	c, err := newCore(ctx, cfg.Base)
+func RunAPI(ctx context.Context, cfg *config.API) error {
+	c, err := newCore(ctx, &cfg.Base)
 	if err != nil {
 		return err
 	}
@@ -33,7 +33,7 @@ func RunAPI(ctx context.Context, cfg config.API) error {
 		return err
 	}
 
-	api := router.New(router.Deps{
+	api := router.New(&router.Deps{
 		Orders:   c.orders,
 		Catalog:  catalog,
 		Logger:   c.logger,
@@ -44,14 +44,14 @@ func RunAPI(ctx context.Context, cfg config.API) error {
 	addr := net.JoinHostPort("", strconv.Itoa(cfg.Port))
 	c.logger.InfoContext(ctx, "api listening", "addr", addr)
 
-	err = httpserver.Run(ctx, httpserver.Config{Addr: addr, ShutdownTimeout: cfg.ShutdownTimeout}, api)
+	err = httpserver.Run(ctx, &httpserver.Config{Addr: addr, ShutdownTimeout: cfg.ShutdownTimeout}, api)
 	logExit(ctx, c.logger, "api", err)
 	return err
 }
 
 // newVerifier returns how bearer tokens are checked. The skeleton has no
 // identity provider: plug yours in here by implementing middleware.Verifier.
-func newVerifier(ctx context.Context, cfg config.API, c *core) (middleware.Verifier, error) {
+func newVerifier(ctx context.Context, cfg *config.API, c *core) (middleware.Verifier, error) {
 	if cfg.AuthDevInsecure {
 		c.logger.WarnContext(ctx, "AUTH_DEV_INSECURE is on: bearer tokens are trusted as user IDs without verification")
 		return middleware.DevInsecureVerifier(), nil

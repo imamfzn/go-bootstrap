@@ -29,7 +29,7 @@ type healthBody struct {
 // Live reports that the process is running. It checks nothing else, so a
 // database outage does not make the platform restart healthy instances.
 func (h *Health) Live(w http.ResponseWriter, _ *http.Request) error {
-	response.JSON(w, http.StatusOK, healthBody{Status: "ok"})
+	response.JSON(w, http.StatusOK, &healthBody{Status: "ok"})
 	return nil
 }
 
@@ -38,6 +38,6 @@ func (h *Health) Ready(w http.ResponseWriter, r *http.Request) error {
 	if err := h.ready(r.Context()); err != nil {
 		return fmt.Errorf("readiness check: %w", err)
 	}
-	response.JSON(w, http.StatusOK, healthBody{Status: "ok"})
+	response.JSON(w, http.StatusOK, &healthBody{Status: "ok"})
 	return nil
 }

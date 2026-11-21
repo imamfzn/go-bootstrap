@@ -22,7 +22,7 @@ type infra struct {
 	telemetry telemetry.Shutdown
 }
 
-func newInfra(ctx context.Context, cfg config.Base) (*infra, error) {
+func newInfra(ctx context.Context, cfg *config.Base) (*infra, error) {
 	log := logger.New(os.Stdout, cfg.LogLevel).With("service", cfg.ServiceName)
 	// The default logger is the one process-wide value this module sets,
 	// so that libraries logging through slog use the same output.
@@ -33,7 +33,7 @@ func newInfra(ctx context.Context, cfg config.Base) (*infra, error) {
 		return nil, fmt.Errorf("set up telemetry: %w", err)
 	}
 
-	db, err := postgres.Open(ctx, postgres.Config{
+	db, err := postgres.Open(ctx, &postgres.Config{
 		URL:                    cfg.DatabaseURL,
 		InstanceConnectionName: cfg.DBInstanceConnectionName,
 		IAMAuth:                cfg.DBIAMAuth,

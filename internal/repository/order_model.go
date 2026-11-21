@@ -22,7 +22,7 @@ type orderRow struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
-func (r orderRow) toDomain() *domain.Order {
+func (r *orderRow) toDomain() *domain.Order {
 	return &domain.Order{
 		ID:        r.ID,
 		UserID:    r.UserID,

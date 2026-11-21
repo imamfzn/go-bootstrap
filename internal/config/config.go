@@ -57,7 +57,7 @@ type Job struct {
 // "required" only checks that a variable exists, so a variable set to an
 // empty string, which is what an unset Terraform input renders as, would
 // pass it.
-func (b Base) validate() error {
+func (b *Base) validate() error {
 	if b.DatabaseURL == "" {
 		return errors.New("DATABASE_URL is required")
 	}
@@ -65,37 +65,37 @@ func (b Base) validate() error {
 }
 
 // LoadAPI reads the API configuration from the environment.
-func LoadAPI() (API, error) {
-	var cfg API
-	if err := envconfig.Process("", &cfg); err != nil {
-		return API{}, fmt.Errorf("api config: %w", err)
+func LoadAPI() (*API, error) {
+	cfg := new(API)
+	if err := envconfig.Process("", cfg); err != nil {
+		return nil, fmt.Errorf("api config: %w", err)
 	}
 	if err := cfg.validate(); err != nil {
-		return API{}, fmt.Errorf("api config: %w", err)
+		return nil, fmt.Errorf("api config: %w", err)
 	}
 	return cfg, nil
 }
 
 // LoadWorker reads the worker configuration from the environment.
-func LoadWorker() (Worker, error) {
-	var cfg Worker
-	if err := envconfig.Process("", &cfg); err != nil {
-		return Worker{}, fmt.Errorf("worker config: %w", err)
+func LoadWorker() (*Worker, error) {
+	cfg := new(Worker)
+	if err := envconfig.Process("", cfg); err != nil {
+		return nil, fmt.Errorf("worker config: %w", err)
 	}
 	if err := cfg.validate(); err != nil {
-		return Worker{}, fmt.Errorf("worker config: %w", err)
+		return nil, fmt.Errorf("worker config: %w", err)
 	}
 	return cfg, nil
 }
 
 // LoadJob reads the job configuration from the environment.
-func LoadJob() (Job, error) {
-	var cfg Job
-	if err := envconfig.Process("", &cfg); err != nil {
-		return Job{}, fmt.Errorf("job config: %w", err)
+func LoadJob() (*Job, error) {
+	cfg := new(Job)
+	if err := envconfig.Process("", cfg); err != nil {
+		return nil, fmt.Errorf("job config: %w", err)
 	}
 	if err := cfg.validate(); err != nil {
-		return Job{}, fmt.Errorf("job config: %w", err)
+		return nil, fmt.Errorf("job config: %w", err)
 	}
 	return cfg, nil
 }

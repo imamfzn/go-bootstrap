@@ -18,16 +18,16 @@ type OrderTopics struct {
 // Order publishes order events.
 type Order struct {
 	sender queue.Sender
-	topics OrderTopics
+	topics *OrderTopics
 }
 
 // NewOrder returns the order publisher.
-func NewOrder(sender queue.Sender, topics OrderTopics) *Order {
+func NewOrder(sender queue.Sender, topics *OrderTopics) *Order {
 	return &Order{sender: sender, topics: topics}
 }
 
 func (p *Order) OrderCreated(ctx context.Context, order *domain.Order) error {
-	return queue.Publish(ctx, p.sender, p.topics.Created, event.TypeOrderCreated, event.OrderCreated{
+	return queue.Publish(ctx, p.sender, p.topics.Created, event.TypeOrderCreated, &event.OrderCreated{
 		OrderID:   order.ID,
 		UserID:    order.UserID,
 		Amount:    order.Amount,

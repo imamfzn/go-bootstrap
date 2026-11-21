@@ -17,12 +17,12 @@ import (
 const jobMigrate = "migrate"
 
 // RunJob runs the named job once.
-func RunJob(ctx context.Context, cfg config.Job, name string) error {
+func RunJob(ctx context.Context, cfg *config.Job, name string) error {
 	if name == jobMigrate {
 		return runMigrate(ctx, cfg)
 	}
 
-	c, err := newCore(ctx, cfg.Base)
+	c, err := newCore(ctx, &cfg.Base)
 	if err != nil {
 		return err
 	}
@@ -46,8 +46,8 @@ func RunJob(ctx context.Context, cfg config.Job, name string) error {
 	return nil
 }
 
-func runMigrate(ctx context.Context, cfg config.Job) error {
-	inf, err := newInfra(ctx, cfg.Base)
+func runMigrate(ctx context.Context, cfg *config.Job) error {
+	inf, err := newInfra(ctx, &cfg.Base)
 	if err != nil {
 		return err
 	}

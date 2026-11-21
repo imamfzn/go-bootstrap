@@ -11,8 +11,8 @@ import (
 
 // RunWorker consumes subscriptions until ctx is cancelled, then waits for
 // in-flight handlers.
-func RunWorker(ctx context.Context, cfg config.Worker) error {
-	c, err := newCore(ctx, cfg.Base)
+func RunWorker(ctx context.Context, cfg *config.Worker) error {
+	c, err := newCore(ctx, &cfg.Base)
 	if err != nil {
 		return err
 	}
@@ -29,7 +29,7 @@ func RunWorker(ctx context.Context, cfg config.Worker) error {
 		queue.Recover(c.logger),
 	)
 
-	eventrouter.RegisterOrder(consumer, eventrouter.OrderSubscriptions{Created: cfg.SubscriptionOrderCreated}, c.orders)
+	eventrouter.RegisterOrder(consumer, &eventrouter.OrderSubscriptions{Created: cfg.SubscriptionOrderCreated}, c.orders)
 
 	c.logger.InfoContext(ctx, "worker consuming", "concurrency", cfg.Concurrency)
 

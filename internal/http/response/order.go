@@ -19,8 +19,8 @@ type Order struct {
 }
 
 // FromOrder maps a domain order to its JSON form.
-func FromOrder(o *domain.Order) Order {
-	return Order{
+func FromOrder(o *domain.Order) *Order {
+	return &Order{
 		ID:        o.ID,
 		ProductID: o.ProductID,
 		Quantity:  o.Quantity,

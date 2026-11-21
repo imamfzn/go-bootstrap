@@ -37,7 +37,7 @@ type adapter struct {
 	errs *response.ErrorWriter
 }
 
-func (a adapter) handle(h handlerFunc) http.HandlerFunc {
+func (a *adapter) handle(h handlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := h(w, r); err != nil {
 			a.errs.Write(w, r, err)
@@ -50,9 +50,9 @@ func fail(err error) handlerFunc {
 }
 
 // New returns the API as an http.Handler.
-func New(d Deps) http.Handler {
+func New(d *Deps) http.Handler {
 	errs := response.NewErrorWriter(d.Catalog, d.Logger)
-	a := adapter{errs: errs}
+	a := &adapter{errs: errs}
 
 	r := chi.NewRouter()
 	r.Use(

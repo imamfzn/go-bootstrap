@@ -20,7 +20,7 @@ type OrderSubscriptions struct {
 }
 
 // RegisterOrder binds the order event handlers.
-func RegisterOrder(r Registrar, subs OrderSubscriptions, orders usecase.OrderUsecase) {
+func RegisterOrder(r Registrar, subs *OrderSubscriptions, orders usecase.OrderUsecase) {
 	h := handler.NewOrder(orders)
 
 	r.Register(subs.Created, queue.JSON(h.Created))

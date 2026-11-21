@@ -23,7 +23,7 @@ func (s *fakeSender) Send(_ context.Context, topic string, msg *queue.Message) e
 
 func TestOrder_OrderCreated(t *testing.T) {
 	sender := &fakeSender{}
-	pub := publisher.NewOrder(sender, publisher.OrderTopics{Created: "order-created"})
+	pub := publisher.NewOrder(sender, &publisher.OrderTopics{Created: "order-created"})
 	createdAt := time.Date(2026, 11, 21, 9, 0, 0, 0, time.UTC)
 	order := &domain.Order{ID: "o1", UserID: "u1", Amount: 5000, CreatedAt: createdAt}
 

@@ -15,5 +15,5 @@ type PaymentGateway interface {
 	// Charge takes payment once per charge.OrderID, however often it is
 	// called. It returns domain.ErrOrderPaymentDeclined when the payment
 	// is refused.
-	Charge(ctx context.Context, charge domain.Charge) error
+	Charge(ctx context.Context, charge *domain.Charge) error
 }

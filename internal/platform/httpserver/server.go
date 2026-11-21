@@ -20,7 +20,7 @@ type Config struct {
 
 // Run listens on cfg.Addr and serves h until ctx is cancelled, then drains
 // in-flight requests.
-func Run(ctx context.Context, cfg Config, h http.Handler) error {
+func Run(ctx context.Context, cfg *Config, h http.Handler) error {
 	ln, err := new(net.ListenConfig).Listen(ctx, "tcp", cfg.Addr)
 	if err != nil {
 		return fmt.Errorf("listen on %s: %w", cfg.Addr, err)
@@ -29,7 +29,7 @@ func Run(ctx context.Context, cfg Config, h http.Handler) error {
 }
 
 // Serve is Run on an existing listener.
-func Serve(ctx context.Context, ln net.Listener, cfg Config, h http.Handler) error {
+func Serve(ctx context.Context, ln net.Listener, cfg *Config, h http.Handler) error {
 	srv := &http.Server{
 		Handler:           h,
 		ReadHeaderTimeout: 5 * time.Second,

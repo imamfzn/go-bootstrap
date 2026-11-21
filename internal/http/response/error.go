@@ -67,7 +67,7 @@ func (e *ErrorWriter) Write(w http.ResponseWriter, r *http.Request, err error) {
 		domainErr = domain.ErrInternal
 	}
 
-	JSON(w, StatusFor(domainErr), ErrorBody{
+	JSON(w, StatusFor(domainErr), &ErrorBody{
 		Code:    domainErr.Code,
 		Message: e.catalog.Lookup(i18n.LocaleFrom(ctx), domainErr.Code, domainErr.Message),
 	})

@@ -12,8 +12,8 @@ type CreateOrder struct {
 
 // ToDomain builds the use case input. The user comes from authentication,
 // never from the body.
-func (r CreateOrder) ToDomain(userID string) domain.CreateOrder {
-	return domain.CreateOrder{
+func (r *CreateOrder) ToDomain(userID string) *domain.CreateOrder {
+	return &domain.CreateOrder{
 		UserID:    userID,
 		ProductID: r.ProductID,
 		Quantity:  r.Quantity,

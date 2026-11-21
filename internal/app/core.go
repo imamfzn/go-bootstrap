@@ -25,7 +25,7 @@ type core struct {
 	orders usecase.OrderUsecase
 }
 
-func newCore(ctx context.Context, cfg config.Base) (*core, error) {
+func newCore(ctx context.Context, cfg *config.Base) (*core, error) {
 	inf, err := newInfra(ctx, cfg)
 	if err != nil {
 		return nil, err
@@ -39,7 +39,7 @@ func newCore(ctx context.Context, cfg config.Base) (*core, error) {
 	return c, nil
 }
 
-func buildCore(ctx context.Context, cfg config.Base, inf *infra) (*core, error) {
+func buildCore(ctx context.Context, cfg *config.Base, inf *infra) (*core, error) {
 	if cfg.PubSubProjectID == "" {
 		return nil, errors.New("PUBSUB_PROJECT_ID is required")
 	}
@@ -56,10 +56,10 @@ func buildCore(ctx context.Context, cfg config.Base, inf *infra) (*core, error) 
 
 	// Outbound adapters.
 	orderRepo := repository.NewOrder(inf.db)
-	orderEvents := publisher.NewOrder(pubsubClient, publisher.OrderTopics{Created: cfg.TopicOrderCreated})
+	orderEvents := publisher.NewOrder(pubsubClient, &publisher.OrderTopics{Created: cfg.TopicOrderCreated})
 
 	// Use cases.
-	orders := usecase.NewOrder(usecase.OrderDeps{
+	orders := usecase.NewOrder(&usecase.OrderDeps{
 		Orders:     orderRepo,
 		Events:     orderEvents,
 		Payments:   payments,
@@ -72,13 +72,13 @@ func buildCore(ctx context.Context, cfg config.Base, inf *infra) (*core, error) 
 	return &core{infra: inf, pubsub: pubsubClient, orders: orders}, nil
 }
 
-func newPaymentGateway(ctx context.Context, cfg config.Base, inf *infra) (usecase.PaymentGateway, error) {
+func newPaymentGateway(ctx context.Context, cfg *config.Base, inf *infra) (usecase.PaymentGateway, error) {
 	if cfg.PaymentBaseURL == "" {
 		inf.logger.WarnContext(ctx, "PAYMENT_BASE_URL is not set: every payment is approved without a provider")
-		return payment.Approving{Logger: inf.logger}, nil
+		return &payment.Approving{Logger: inf.logger}, nil
 	}
 
-	client, err := payment.NewClient(httpclient.New(cfg.PaymentTimeout), payment.Config{
+	client, err := payment.NewClient(httpclient.New(cfg.PaymentTimeout), &payment.Config{
 		BaseURL: cfg.PaymentBaseURL,
 		APIKey:  cfg.PaymentAPIKey,
 	})

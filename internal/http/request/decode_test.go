@@ -11,7 +11,7 @@ import (
 	"github.com/imamfzn/go-bootstrap/internal/http/request"
 )
 
-func decode(t *testing.T, body string) (request.CreateOrder, error) {
+func decode(t *testing.T, body string) (*request.CreateOrder, error) {
 	t.Helper()
 
 	r := httptest.NewRequestWithContext(t.Context(), http.MethodPost, "/v1/orders", strings.NewReader(body))
@@ -25,8 +25,8 @@ func TestDecode_Valid(t *testing.T) {
 	}
 
 	want := request.CreateOrder{ProductID: "p1", Quantity: 2, Amount: 5000, Note: "hi"}
-	if got != want {
-		t.Fatalf("Decode = %+v, want %+v", got, want)
+	if *got != want {
+		t.Fatalf("Decode = %+v, want %+v", *got, want)
 	}
 }
 
@@ -53,10 +53,10 @@ func TestDecode_Malformed(t *testing.T) {
 }
 
 func TestCreateOrder_ToDomain_TakesUserFromArgument(t *testing.T) {
-	got := request.CreateOrder{ProductID: "p1", Quantity: 2, Amount: 5000}.ToDomain("u1")
+	got := (&request.CreateOrder{ProductID: "p1", Quantity: 2, Amount: 5000}).ToDomain("u1")
 
 	want := domain.CreateOrder{UserID: "u1", ProductID: "p1", Quantity: 2, Amount: 5000}
-	if got != want {
-		t.Fatalf("ToDomain = %+v, want %+v", got, want)
+	if *got != want {
+		t.Fatalf("ToDomain = %+v, want %+v", *got, want)
 	}
 }

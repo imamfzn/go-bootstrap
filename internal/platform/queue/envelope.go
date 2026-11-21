@@ -31,7 +31,7 @@ type Metadata struct {
 }
 
 // Publish wraps payload in an Envelope and sends it to topic.
-func Publish[T any](ctx context.Context, s Sender, topic, eventType string, payload T) error {
+func Publish[T any](ctx context.Context, s Sender, topic, eventType string, payload *T) error {
 	env := Envelope[T]{
 		Meta: Metadata{
 			ID:         ident.New(),
@@ -39,7 +39,7 @@ func Publish[T any](ctx context.Context, s Sender, topic, eventType string, payl
 			RequestID:  requestid.From(ctx),
 			OccurredAt: time.Now().UTC(),
 		},
-		Payload: payload,
+		Payload: *payload,
 	}
 
 	data, err := json.Marshal(env)
