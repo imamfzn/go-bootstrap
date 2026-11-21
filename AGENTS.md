@@ -16,7 +16,7 @@ Entry point for coding agents and new contributors. The guidelines themselves li
 
 1. The change follows [docs/conventions.md](docs/conventions.md).
 2. The change has a test, written as [docs/testing.md](docs/testing.md) describes.
-3. `make check` passes: tidy, vet, lint and tests.
+3. `make check` passes: tidy, vet, lint and tests. There is no CI, so this is the only gate.
 
 ## The rules most often broken
 
@@ -27,7 +27,8 @@ These are in the documents above; they are repeated here because a mistake in an
 - A failure a client may see is a `domain.Err*` with its own code. Add every new code to every file in `locales/`.
 - Every error response is exactly `{"code", "message"}`, written only by `response.ErrorWriter`.
 - SQL is hand-written in the repository. No ORM, no query generator.
-- Tests live in package `xxx_test` and use hand-written fakes. No mock generators.
+- Every `*_test.go` is a unit test: package `xxx_test`, hand-written fakes, no mock generators, and nothing outside the process (no database, Docker, port or outbound request).
+- Structs are passed and returned as pointers. Slices, maps, `time.Time` and `time.Duration` are not.
 - Never edit an applied migration.
 - Only `internal/app` constructs things; only `internal/config` reads the environment.
 

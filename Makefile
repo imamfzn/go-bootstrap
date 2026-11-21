@@ -62,11 +62,11 @@ run-job: ## Run a job: make run-job name=expire-orders
 ## --- Quality ---------------------------------------------------------------
 
 .PHONY: test
-test: ## Run the tests (repository tests need TEST_DATABASE_URL and `make migrate-up`)
+test: ## Run the unit tests (they need nothing else running)
 	go test -race ./...
 
 .PHONY: smoke
-smoke: ## End-to-end check of API, worker and jobs (needs `make up`)
+smoke: ## End-to-end check of the real binaries (needs `make up`; not a unit test)
 	./scripts/smoke.sh
 
 .PHONY: vet
@@ -87,7 +87,7 @@ tidy: ## Tidy go.mod and go.sum
 	go mod tidy
 
 .PHONY: check
-check: tidy vet lint test ## Everything CI runs
+check: tidy vet lint test ## All checks: tidy, vet, lint, test
 
 ## --- Migrations ------------------------------------------------------------
 

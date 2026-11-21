@@ -28,7 +28,6 @@ goose runs each migration in a transaction, so a failure rolls back cleanly.
 | Where | How |
 |---|---|
 | Local | `make migrate-up`, using the goose CLI against `DATABASE_URL` |
-| CI | the same command against a throwaway PostgreSQL, before the tests |
 | Production | the `migrate` job, run by the deploy pipeline before the API rolls out |
 
 The files are embedded in the binary (`db/embed.go`), so `/bin/job migrate` needs nothing but the image and always carries the schema that matches its code. The pipeline starts the job with `gcloud run jobs execute --wait`: the runner never connects to the database, and a failed migration stops the rollout.

@@ -30,7 +30,7 @@ make run-worker    # in another
 | End-to-end check of the running binaries | `make smoke` |
 | Vet, lint | `make vet`, `make lint` |
 | Apply the Go modernizers and format | `make fix` |
-| Everything CI runs | `make check` |
+| All checks: tidy, vet, lint, test | `make check` |
 | Build the binaries / the image | `make build`, `make image` |
 
 ## Configuration

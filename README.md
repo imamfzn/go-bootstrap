@@ -89,4 +89,4 @@ deploy/         Dockerfile
 
 ## Deploying
 
-`deploy/Dockerfile` builds one distroless image holding `/bin/api`, `/bin/job` and `/bin/worker`. `.github/workflows/deploy.yaml` is a template that builds the image, runs the `migrate` job and then rolls out the API; it expects the Cloud Run resources to exist already.
+`deploy/Dockerfile` builds one distroless image holding `/bin/api`, `/bin/job` and `/bin/worker`; the container command chooses the binary. Deploy in this order: build and push the image, run `/bin/job migrate` as a Cloud Run Job and wait for it, then roll out the API. No pipeline is included.

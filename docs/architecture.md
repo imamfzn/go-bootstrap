@@ -80,7 +80,7 @@ Pub/Sub delivers at least once. Handlers are written to be safe to run twice: `P
 
 ## Migrations
 
-Plain SQL files run by goose. Locally and in CI the goose CLI applies them. In production the deploy pipeline runs `job migrate` as a Cloud Run Job, inside the project, before rolling out the API; the files are embedded in the binary, so an image always carries the schema that matches its code. The API never migrates at startup.
+Plain SQL files run by goose. Locally the goose CLI applies them. In production the deploy runs `job migrate` as a Cloud Run Job, inside the project, before rolling out the API; the files are embedded in the binary, so an image always carries the schema that matches its code. The API never migrates at startup.
 
 ## What the skeleton leaves to you
 

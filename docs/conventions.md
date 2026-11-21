@@ -38,6 +38,13 @@ locales/               translations, embedded
 - Use case structs are unexported; constructors return the interface.
 - Adapters return concrete types. `app` passes them where an interface is expected.
 
+## Parameters and results
+
+- A struct is passed and returned as a pointer: `Create(ctx, input *domain.CreateOrder) (*domain.Order, error)`, `NewOrder(d *OrderDeps)`, `postgres.Open(ctx, cfg *Config)`.
+- Methods on structs use pointer receivers.
+- Exceptions: slices, arrays and maps are passed as they are, and so are small standard value types such as `time.Time` and `time.Duration`.
+- A pointer parameter is expected to be non-nil. Callers are inside this module, so functions do not check for nil.
+
 ## Domain
 
 - Types, behaviour as methods, and errors. No struct tags, no I/O.
