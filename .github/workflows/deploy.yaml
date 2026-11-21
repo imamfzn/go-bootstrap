@@ -1,0 +1,61 @@
+# Template. It runs only when started by hand, and does nothing useful until
+# the variables below exist in the repository settings:
+#
+#   Variables: GCP_PROJECT_ID, GCP_REGION, AR_REPOSITORY, SERVICE_NAME,
+#              GCP_WORKLOAD_IDENTITY_PROVIDER, GCP_DEPLOY_SERVICE_ACCOUNT
+#
+# The Cloud Run service and job themselves (environment variables, secrets,
+# service accounts, the Cloud SQL connection, the job schedule) are expected
+# to exist already, created by Terraform. This workflow only ships an image.
+name: deploy
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+env:
+  IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.AR_REPOSITORY }}/${{ vars.SERVICE_NAME }}:${{ github.sha }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      # Keyless: GitHub's OIDC token is exchanged for short-lived credentials.
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Build and push the image
+        run: |
+          gcloud auth configure-docker "${{ vars.GCP_REGION }}-docker.pkg.dev" --quiet
+          docker build -f deploy/Dockerfile -t "$IMAGE" .
+          docker push "$IMAGE"
+
+      # The runner never connects to the database. It asks Cloud Run to run
+      # the migration inside the project, and --wait fails this step if the
+      # migration fails, which stops the rollout below.
+      - name: Migrate
+        run: |
+          gcloud run jobs update "${{ vars.SERVICE_NAME }}-migrate" \
+            --region "${{ vars.GCP_REGION }}" --image "$IMAGE" \
+            --command /bin/job --args migrate
+          gcloud run jobs execute "${{ vars.SERVICE_NAME }}-migrate" \
+            --region "${{ vars.GCP_REGION }}" --wait
+
+      - name: Roll out the API
+        run: |
+          gcloud run services update "${{ vars.SERVICE_NAME }}-api" \
+            --region "${{ vars.GCP_REGION }}" --image "$IMAGE"

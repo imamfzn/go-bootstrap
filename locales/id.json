@@ -1,0 +1,17 @@
+{
+  "INTERNAL": "Terjadi kesalahan pada server",
+  "REQUEST_MALFORMED": "Permintaan tidak dapat dibaca",
+  "UNAUTHORIZED": "Autentikasi diperlukan",
+  "FORBIDDEN": "Anda tidak memiliki akses ke sumber daya ini",
+  "NOT_FOUND": "Sumber daya tidak ditemukan",
+  "METHOD_NOT_ALLOWED": "Metode tidak diizinkan",
+  "ORDER_GET_NOT-FOUND": "Pesanan tidak ditemukan",
+  "ORDER_CREATE_ALREADY-EXISTS": "Pesanan sudah ada",
+  "ORDER_CREATE_PRODUCT-REQUIRED": "Produk wajib diisi",
+  "ORDER_CREATE_QUANTITY-INVALID": "Jumlah harus antara 1 dan 100",
+  "ORDER_CREATE_AMOUNT-INVALID": "Nominal harus lebih dari nol",
+  "ORDER_CREATE_NOTE-TOO-LONG": "Catatan maksimal 500 karakter",
+  "ORDER_CANCEL_NOT-ALLOWED": "Pesanan ini tidak dapat dibatalkan lagi",
+  "ORDER_PAY_NOT-ALLOWED": "Pesanan ini tidak dapat dibayar lagi",
+  "ORDER_PAY_PAYMENT-DECLINED": "Pembayaran ditolak"
+}
