@@ -58,7 +58,7 @@ jobs:
       # Proves every migration applies from an empty database, and gives the
       # repository tests the schema they run against.
       - name: Migrate
-        run: go tool goose -dir db/migrations postgres "$DATABASE_URL" up
+        run: go tool -modfile=tools.mod goose -dir db/migrations postgres "$DATABASE_URL" up
 
       - name: Test
         run: go test -race ./...

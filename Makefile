@@ -5,7 +5,7 @@ export
 endif
 
 MIGRATIONS := db/migrations
-GOOSE      := go tool goose -dir $(MIGRATIONS)
+GOOSE      := go tool -modfile=tools.mod goose -dir $(MIGRATIONS)
 PUBSUB     := http://$(PUBSUB_EMULATOR_HOST)/v1/projects/$(PUBSUB_PROJECT_ID)
 IMAGE      ?= go-bootstrap
 
@@ -22,7 +22,7 @@ rename: ## Rename the module after cloning the template: make rename module=gith
 	@test -n "$(module)" || (echo "usage: make rename module=github.com/acme/orders" && exit 1)
 	@old=$$(go list -m) && \
 	  go mod edit -module $(module) && \
-	  grep -rl "$$old" --include='*.go' --include='*.yaml' --include='*.md' . | xargs perl -pi -e "s|\Q$$old\E|$(module)|g" && \
+	  grep -rl "$$old" --include='*.go' --include='*.mod' --include='*.yaml' --include='*.md' . | xargs perl -pi -e "s|\Q$$old\E|$(module)|g" && \
 	  echo "module renamed from $$old to $(module)"
 
 .PHONY: up

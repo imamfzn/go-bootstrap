@@ -3,6 +3,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -14,7 +15,7 @@ type Base struct {
 	ServiceName string `envconfig:"SERVICE_NAME" default:"go-bootstrap"`
 	LogLevel    string `envconfig:"LOG_LEVEL" default:"info"`
 
-	DatabaseURL              string `envconfig:"DATABASE_URL" required:"true"`
+	DatabaseURL              string `envconfig:"DATABASE_URL"`
 	DBInstanceConnectionName string `envconfig:"DB_INSTANCE_CONNECTION_NAME"`
 	DBIAMAuth                bool   `envconfig:"DB_IAM_AUTH" default:"false"`
 	DBMaxConns               int32  `envconfig:"DB_MAX_CONNS" default:"5"`
@@ -52,10 +53,24 @@ type Job struct {
 	Base
 }
 
+// validate rejects a configuration no binary can start with. envconfig's own
+// "required" only checks that a variable exists, so a variable set to an
+// empty string, which is what an unset Terraform input renders as, would
+// pass it.
+func (b Base) validate() error {
+	if b.DatabaseURL == "" {
+		return errors.New("DATABASE_URL is required")
+	}
+	return nil
+}
+
 // LoadAPI reads the API configuration from the environment.
 func LoadAPI() (API, error) {
 	var cfg API
 	if err := envconfig.Process("", &cfg); err != nil {
+		return API{}, fmt.Errorf("api config: %w", err)
+	}
+	if err := cfg.validate(); err != nil {
 		return API{}, fmt.Errorf("api config: %w", err)
 	}
 	return cfg, nil
@@ -67,6 +82,9 @@ func LoadWorker() (Worker, error) {
 	if err := envconfig.Process("", &cfg); err != nil {
 		return Worker{}, fmt.Errorf("worker config: %w", err)
 	}
+	if err := cfg.validate(); err != nil {
+		return Worker{}, fmt.Errorf("worker config: %w", err)
+	}
 	return cfg, nil
 }
 
@@ -74,6 +92,9 @@ func LoadWorker() (Worker, error) {
 func LoadJob() (Job, error) {
 	var cfg Job
 	if err := envconfig.Process("", &cfg); err != nil {
+		return Job{}, fmt.Errorf("job config: %w", err)
+	}
+	if err := cfg.validate(); err != nil {
 		return Job{}, fmt.Errorf("job config: %w", err)
 	}
 	return cfg, nil
