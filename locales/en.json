@@ -1,0 +1,17 @@
+{
+  "INTERNAL": "Internal error",
+  "REQUEST_MALFORMED": "The request could not be read",
+  "UNAUTHORIZED": "Authentication is required",
+  "FORBIDDEN": "You do not have access to this resource",
+  "NOT_FOUND": "Resource not found",
+  "METHOD_NOT_ALLOWED": "Method not allowed",
+  "ORDER_GET_NOT-FOUND": "Order not found",
+  "ORDER_CREATE_ALREADY-EXISTS": "Order already exists",
+  "ORDER_CREATE_PRODUCT-REQUIRED": "A product is required",
+  "ORDER_CREATE_QUANTITY-INVALID": "Quantity must be between 1 and 100",
+  "ORDER_CREATE_AMOUNT-INVALID": "Amount must be greater than zero",
+  "ORDER_CREATE_NOTE-TOO-LONG": "Note must be 500 characters or fewer",
+  "ORDER_CANCEL_NOT-ALLOWED": "This order can no longer be cancelled",
+  "ORDER_PAY_NOT-ALLOWED": "This order can no longer be paid",
+  "ORDER_PAY_PAYMENT-DECLINED": "The payment was declined"
+}

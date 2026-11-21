@@ -1,0 +1,88 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - depguard
+    - errorlint
+    - gocritic
+    - misspell
+
+  settings:
+    # The import rule of the architecture, enforced. See docs/conventions.md.
+    depguard:
+      rules:
+        domain:
+          files:
+            - "**/internal/domain/*.go"
+            - "!$test"
+          deny:
+            - pkg: github.com/imamfzn/go-bootstrap/internal
+              desc: domain imports nothing from this module
+            - pkg: github.com/jackc/pgx
+              desc: domain performs no I/O
+            - pkg: net/http
+              desc: domain knows no transport
+
+        usecase:
+          files:
+            - "**/internal/usecase/*.go"
+            - "!$test"
+          deny:
+            - pkg: github.com/imamfzn/go-bootstrap/internal/repository
+              desc: use cases depend on the interfaces in usecase/repository.go
+            - pkg: github.com/imamfzn/go-bootstrap/internal/publisher
+              desc: use cases depend on the interfaces in usecase/publisher.go
+            - pkg: github.com/imamfzn/go-bootstrap/internal/external
+              desc: use cases depend on the interfaces in usecase/external.go
+            - pkg: github.com/imamfzn/go-bootstrap/internal/http
+              desc: use cases know no inbound adapter
+            - pkg: github.com/imamfzn/go-bootstrap/internal/event
+              desc: use cases know no inbound adapter and no payload
+            - pkg: github.com/imamfzn/go-bootstrap/internal/job
+              desc: use cases know no inbound adapter
+            - pkg: github.com/imamfzn/go-bootstrap/internal/app
+              desc: only app constructs things
+            - pkg: github.com/imamfzn/go-bootstrap/internal/config
+              desc: configuration is passed in as plain values
+            - pkg: github.com/imamfzn/go-bootstrap/internal/platform/postgres
+              desc: use cases reach the database through repositories
+            - pkg: github.com/imamfzn/go-bootstrap/internal/platform/queue
+              desc: use cases publish through the interfaces in usecase/publisher.go
+            - pkg: github.com/jackc/pgx
+              desc: use cases reach the database through repositories
+            - pkg: github.com/go-chi/chi
+              desc: use cases know no transport
+            - pkg: cloud.google.com/go/pubsub
+              desc: use cases know no broker
+            - pkg: net/http
+              desc: use cases know no transport
+
+        platform:
+          files:
+            - "**/internal/platform/**/*.go"
+            - "!$test"
+          deny:
+            - pkg: github.com/imamfzn/go-bootstrap/internal/domain
+              desc: platform holds no business knowledge
+            - pkg: github.com/imamfzn/go-bootstrap/internal/usecase
+              desc: platform holds no business knowledge
+            - pkg: github.com/imamfzn/go-bootstrap/internal/repository
+              desc: platform holds no business knowledge
+            - pkg: github.com/imamfzn/go-bootstrap/internal/http
+              desc: platform holds no business knowledge
+            - pkg: github.com/imamfzn/go-bootstrap/internal/event
+              desc: platform holds no business knowledge
+
+  exclusions:
+    presets:
+      - comments
+      - std-error-handling
+
+formatters:
+  enable:
+    - gofmt
